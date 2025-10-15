@@ -4,7 +4,7 @@ export class AudioPlayer {
         this.audioElement.style.display = "none";
         this.DOM = {};
         this.#makeHTML();
-        this.bindEvents();
+        this.#bindEvents();
     }
 
     #getTimeCodeFromNum(num) {
@@ -38,6 +38,7 @@ export class AudioPlayer {
         this.DOM.play = div.querySelector(".audio-player-play");
         this.DOM.timeline = div.querySelector(".audio-player-timeline");
         this.DOM.timelineProgress = div.querySelector(".audio-player-timeline-progress");
+        this.DOM.timelineProgressText = div.querySelector(".audio-player-timeline-progress-text");
         this.DOM.mute = div.querySelector(".audio-player-mute");
         this.DOM.volume = div.querySelector(".audio-player-volume");
         this.DOM.volumeProgress = div.querySelector(".audio-player-volume-progress");
@@ -46,14 +47,28 @@ export class AudioPlayer {
         this.audioElement.after(this.DOM.cnt);
     }
 
-    bindEvents() {
-        let changeAudioVolume = (vol) => {
-            vol = Math.min(Math.max(vol, 0), 1);
-            this.audioElement.volume = vol;
-            this.DOM.volumeProgress.style.width = `${vol * 100}%`;
-            this.DOM.mute.classList.toggle("audio-player-mute--muted", vol === 0)
-        }
+    play() {
+        this.audioElement.play();
+        this.DOM.play.classList.add("audio-player-play--pause");
+    }
 
+    pause() {
+        this.audioElement.pause();
+        this.DOM.play.classList.remove("audio-player-play--pause");
+    }
+
+    stop() {
+
+    }
+
+    changeAudioVolume = (vol) => {
+        vol = Math.min(Math.max(vol, 0), 1);
+        this.audioElement.volume = vol;
+        this.DOM.volumeProgress.style.width = `${vol * 100}%`;
+        this.DOM.mute.classList.toggle("audio-player-mute--muted", vol === 0);
+    }
+
+    #bindEvents() {
         let changeProgress = false;
         let changeVolume = false;
 
@@ -65,11 +80,9 @@ export class AudioPlayer {
 
         this.DOM.play.addEventListener("click", () => {
             if (this.audioElement.paused || this.audioElement.ended) {
-                this.audioElement.play();
-                this.DOM.play.classList.add("audio-player-play--pause");
+                this.play();
             } else {
-                this.audioElement.pause();
-                this.DOM.play.classList.remove("audio-player-play--pause");
+                this.pause();
             }
         })
 
@@ -79,7 +92,7 @@ export class AudioPlayer {
 
         this.audioElement.addEventListener("timeupdate", () => {
             if (!this.DOM.timeline.dataset.max) this.DOM.timeline.dataset.max = this.audioElement.duration;
-            this.DOM.timelineProgress.style.width = `${Math.floor(this.audioElement.currentTime * 100 / this.audioElement.duration)}%`;
+            this.DOM.timelineProgress.style.width = `${this.audioElement.currentTime * 100 / this.audioElement.duration}%`;
             this.DOM.timelineText.innerText = this.#getTimeCodeFromNum(this.audioElement.currentTime);
             this.DOM.timelineProgressText.innerText = this.#getTimeCodeFromNum(this.audioElement.currentTime);
         })
@@ -111,7 +124,7 @@ export class AudioPlayer {
             changeVolume = true;
             const rect = this.DOM.volume.getBoundingClientRect();
             let pos = 1 - (rect.right - e.pageX) / this.DOM.volume.offsetWidth;
-            changeAudioVolume(pos);
+            this.changeAudioVolume(pos);
         })
 
         document.addEventListener("mouseup", () => {
@@ -122,10 +135,10 @@ export class AudioPlayer {
             if (changeVolume) {
                 const rect = this.DOM.volume.getBoundingClientRect();
                 let pos = 1 - (rect.right - e.pageX) / this.DOM.volume.offsetWidth;
-                changeAudioVolume(pos);
+                this.changeAudioVolume(pos);
             }
         })
 
-        changeAudioVolume(this.audioElement.volume);
+        this.changeAudioVolume(this.audioElement.volume);
     }
 }
