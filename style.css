@@ -5,6 +5,8 @@
     display: flex;
     border-radius: 4px;
     overflow: hidden;
+
+    --color: #43F093;
 }
 
 .audio-player-play {
@@ -44,7 +46,7 @@
 }
 
 .audio-player-timeline-progress {
-    background: #43F093;
+    background: var(--color);
     width: 0%;
     display: block;
     overflow: hidden;
@@ -82,7 +84,7 @@
     content: "";
     height: 100%;
     width: 0;
-    background: #43F093;
+    background: var(--color);
     position: absolute;
     left: 0;
     top: 50%;

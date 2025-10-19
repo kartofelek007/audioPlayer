@@ -71,6 +71,7 @@ export class AudioPlayer {
     #bindEvents() {
         let changeProgress = false;
         let changeVolume = false;
+        let mouseX, mouseY;
 
         this.DOM.mute.addEventListener("click", () => {
             this.audioElement.muted = !this.audioElement.muted;
@@ -112,8 +113,14 @@ export class AudioPlayer {
             changeProgress = false;
         })
 
+        let lastMoveProgress = 0;
+        let eventThrottleProgress = 1;
+
         document.addEventListener("mousemove", (e) => {
-            if (changeProgress) {
+            let now = Date.now();
+
+            if (changeProgress && now > lastMoveProgress + eventThrottleProgress) {
+                lastMoveProgress = now;
                 const rect = this.DOM.timeline.getBoundingClientRect();
                 const pos = (e.pageX - rect.left) / this.DOM.timeline.offsetWidth;
                 this.audioElement.currentTime = pos * this.audioElement.duration;
@@ -131,8 +138,14 @@ export class AudioPlayer {
             changeVolume = false;
         })
 
+        let lastMoveVolume = 0;
+        let eventThrottleVolume = 1;
+
         document.addEventListener("mousemove", (e) => {
-            if (changeVolume) {
+            let now = Date.now();
+
+            if (changeVolume && now > lastMoveVolume + eventThrottleVolume) {
+                lastMoveVolume = now;
                 const rect = this.DOM.volume.getBoundingClientRect();
                 let pos = 1 - (rect.right - e.pageX) / this.DOM.volume.offsetWidth;
                 this.changeAudioVolume(pos);
